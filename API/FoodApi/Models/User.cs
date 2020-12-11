@@ -17,6 +17,6 @@ namespace FoodApi.Models
         public string PostCode { get; set; }
         public string PhoneNumber { get; set; }
         public string StreetName { get; set; }
-
+        public string HouseNumber { get; set; }
     }
 }

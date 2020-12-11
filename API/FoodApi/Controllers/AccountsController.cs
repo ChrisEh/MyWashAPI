@@ -9,6 +9,7 @@ using FoodApi.Data;
 using FoodApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -21,11 +22,14 @@ namespace FoodApi.Controllers
         private IConfiguration _configuration;
         private readonly AuthService _auth;
         private FoodDbContext _dbContext;
-        public AccountsController(FoodDbContext dbContext , IConfiguration configuration)
+        private IHttpContextAccessor _httpContextAccessor;
+
+        public AccountsController(FoodDbContext dbContext, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
             _auth = new AuthService(_configuration);
             _dbContext = dbContext;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost]
@@ -39,11 +43,38 @@ namespace FoodApi.Controllers
                 Name = user.Name,
                 Email = user.Email,
                 Password = SecurePasswordHasherHelper.Hash(user.Password),
+                PhoneNumber = user.PhoneNumber,
+                StreetName = user.StreetName,
+                Place = user.Place,
+                PostCode = user.PostCode,
                 Role = "User"
             };
             _dbContext.Users.Add(userObj);
             await _dbContext.SaveChangesAsync();
             return StatusCode(StatusCodes.Status201Created);
+        }
+
+        [HttpGet("{userId}")]
+        public IActionResult GetUser(string userId)
+        {
+            var user = _dbContext.Users.FirstOrDefault(u => u.Id.ToString() == userId);
+            if (user == null) return StatusCode(StatusCodes.Status404NotFound);
+            return Ok(user);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUserDetails(UpdateUserDetails update)
+        {
+            var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id.ToString() == update.Id);
+            if (userToUpdate.Id.ToString() != update.Id) return StatusCode(StatusCodes.Status404NotFound);   
+            if (!string.IsNullOrWhiteSpace(update.StreetName)) { userToUpdate.StreetName = update.StreetName; }
+            if (!string.IsNullOrWhiteSpace(update.HouseNumber)) { userToUpdate.HouseNumber = update.HouseNumber; }
+            if (!string.IsNullOrWhiteSpace(update.PostCode)) { userToUpdate.PostCode = update.PostCode; }
+            if (!string.IsNullOrWhiteSpace(update.Place)) { userToUpdate.Place = update.Place; }
+            if (!string.IsNullOrWhiteSpace(update.PhoneNumber)) { userToUpdate.PhoneNumber = update.PhoneNumber; }
+            _dbContext.Update(userToUpdate);
+            await _dbContext.SaveChangesAsync();
+            return Ok();
         }
 
         [HttpPost]
