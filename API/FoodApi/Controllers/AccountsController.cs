@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-namespace MyWashApi.Controllers
+namespace FoodApi.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
@@ -66,11 +66,7 @@ namespace MyWashApi.Controllers
         public async Task<IActionResult> UpdateUserDetails(UpdateUserDetails update)
         {
             var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id.ToString() == update.Id);
-<<<<<<< HEAD:MyWashApi/Controllers/AccountsController.cs
-            if (userToUpdate.Id.ToString() != update.Id) return StatusCode(StatusCodes.Status404NotFound);
-=======
             if (userToUpdate.Id.ToString() != update.Id) return StatusCode(StatusCodes.Status404NotFound);   
->>>>>>> main:API/FoodApi/Controllers/AccountsController.cs
             if (!string.IsNullOrWhiteSpace(update.StreetName)) { userToUpdate.StreetName = update.StreetName; }
             if (!string.IsNullOrWhiteSpace(update.HouseNumber)) { userToUpdate.HouseNumber = update.HouseNumber; }
             if (!string.IsNullOrWhiteSpace(update.PostCode)) { userToUpdate.PostCode = update.PostCode; }

@@ -31,10 +31,30 @@ namespace MyWashApi
             services.AddTransient<IProductRepository, ProductRepository>();
             services.AddTransient<ICustomerRepository, CustomerRepository>();
 
+<<<<<<< HEAD:MyWashApi/Startup.cs
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<ICustomerService, CustomerService>();
 
             services.AddControllersWithViews();
+=======
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+               .AddJwtBearer(options =>
+               {
+                   options.TokenValidationParameters = new TokenValidationParameters
+                   {
+                       ValidateIssuer = true,
+                       ValidateAudience = true,
+                       ValidateLifetime = true,
+                       ValidateIssuerSigningKey = true,
+                       ValidIssuer = Configuration["Tokens:Issuer"],
+                       ValidAudience = Configuration["Tokens:Issuer"],
+                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"])),
+                       ClockSkew = TimeSpan.Zero,
+                   };
+               });
+            services.AddDbContext<FoodDbContext>(option => option.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=MyWash"));
+            services.AddHttpContextAccessor();
+>>>>>>> main:API/FoodApi/Startup.cs
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
