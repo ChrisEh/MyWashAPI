@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MyWashApi.Controllers
+namespace FoodApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -32,15 +32,16 @@ namespace MyWashApi.Controllers
 
             var shoppingCartItems = from s in _dbContext.ShoppingCartItems.Where(s => s.CustomerId == userId)
                                     join p in _dbContext.Products on s.ProductId equals p.Id
-                select new
-                {
-                    Id = s.Id,
-                    Price = s.Price,
-                    TotalAmount = s.TotalAmount,
-                    Qty = s.Qty,
-                    ProductName = p.Name,
 
-                };
+                                    select new
+                                    {
+                                        Id = s.Id,
+                                        Price = s.Price,
+                                        TotalAmount = s.TotalAmount,
+                                        Qty = s.Qty,
+                                        ProductName = p.Name,
+
+                                    };
 
             return Ok(shoppingCartItems);
         }

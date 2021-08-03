@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AuthenticationPlugin;
-using FoodApi.Data;
-using FoodApi.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using MyWashApi.Data.Models;
+using MyWashApi.Dtos;
 
 namespace MyWashApi.Controllers
 {
@@ -21,73 +20,65 @@ namespace MyWashApi.Controllers
     {
         private IConfiguration _configuration;
         private readonly AuthService _auth;
-        private FoodDbContext _dbContext;
+        private MyWashContext _ctx;
         private IHttpContextAccessor _httpContextAccessor;
+        private IMapper _mapper;
 
-        public AccountsController(FoodDbContext dbContext, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public AccountsController(MyWashContext ctx, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, 
+            IMapper mapper)
         {
             _configuration = configuration;
             _auth = new AuthService(_configuration);
-            _dbContext = dbContext;
+            _ctx = ctx;
             _httpContextAccessor = httpContextAccessor;
+            _mapper = mapper;
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Register(User user)
+        public async Task<IActionResult> Register(UserCreateDto user)
         {
-            var userWithSameEmail = _dbContext.Users.SingleOrDefault(u => u.Email == user.Email);
-            if (userWithSameEmail != null) return BadRequest("User with this email already exists");
-            var userObj = new User
-            {
-                Name = user.Name,
-                Email = user.Email,
-                Password = SecurePasswordHasherHelper.Hash(user.Password),
-                PhoneNumber = user.PhoneNumber,
-                StreetName = user.StreetName,
-                Place = user.Place,
-                PostCode = user.PostCode,
-                Role = "User"
-            };
-            _dbContext.Users.Add(userObj);
-            await _dbContext.SaveChangesAsync();
+            if (_ctx.Users.SingleOrDefault(u => u.Email == user.Email) != null) 
+                return BadRequest("User with this email already exists.");
+
+            var newUser = _mapper.Map<UserCreateDto, User>(user);
+            newUser.Role = "User";
+            newUser.Password = SecurePasswordHasherHelper.Hash(user.Password);
+
+            _ctx.Users.Add(newUser);
+
+            await _ctx.SaveChangesAsync();
+
             return StatusCode(StatusCodes.Status201Created);
         }
 
         [HttpGet("{userId}")]
         public IActionResult GetUser(string userId)
         {
-            var user = _dbContext.Users.FirstOrDefault(u => u.Id.ToString() == userId);
+            var user = _ctx.Users.FirstOrDefault(u => u.Id.ToString() == userId);
             if (user == null) return StatusCode(StatusCodes.Status404NotFound);
+
             return Ok(user);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateUserDetails(UpdateUserDetails update)
+        public async Task<IActionResult> UpdateUserDetails(UserUpdateDto userUpdateDto)
         {
-            var userToUpdate = _dbContext.Users.FirstOrDefault(u => u.Id.ToString() == update.Id);
-<<<<<<< HEAD:MyWashApi/Controllers/AccountsController.cs
-            if (userToUpdate.Id.ToString() != update.Id) return StatusCode(StatusCodes.Status404NotFound);
-=======
-            if (userToUpdate.Id.ToString() != update.Id) return StatusCode(StatusCodes.Status404NotFound);   
->>>>>>> main:API/FoodApi/Controllers/AccountsController.cs
-            if (!string.IsNullOrWhiteSpace(update.StreetName)) { userToUpdate.StreetName = update.StreetName; }
-            if (!string.IsNullOrWhiteSpace(update.HouseNumber)) { userToUpdate.HouseNumber = update.HouseNumber; }
-            if (!string.IsNullOrWhiteSpace(update.PostCode)) { userToUpdate.PostCode = update.PostCode; }
-            if (!string.IsNullOrWhiteSpace(update.Place)) { userToUpdate.Place = update.Place; }
-            if (!string.IsNullOrWhiteSpace(update.PhoneNumber)) { userToUpdate.PhoneNumber = update.PhoneNumber; }
-            _dbContext.Update(userToUpdate);
-            await _dbContext.SaveChangesAsync();
+            var userToUpdate = _mapper.Map<UserUpdateDto, User>(userUpdateDto);
+            if (userToUpdate == null) return StatusCode(StatusCodes.Status404NotFound);
+            _ctx.Update(userToUpdate);
+            await _ctx.SaveChangesAsync();
+
             return Ok();
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult Login(User user)
+        public IActionResult Login(UserLoginDto userLoginData)
         {
-            var userEmail = _dbContext.Users.FirstOrDefault(u => u.Email == user.Email);
-            if (userEmail == null) return StatusCode(StatusCodes.Status404NotFound);
-            var hashedPassword = userEmail.Password;
+            var user = _mapper.Map<UserLoginDto, User>(userLoginData);
+            if (user == null) return StatusCode(StatusCodes.Status404NotFound);
+            var hashedPassword = user.Password;
             if (!SecurePasswordHasherHelper.Verify(user.Password, hashedPassword)) return Unauthorized();
             var claims = new[]
             {
@@ -95,7 +86,7 @@ namespace MyWashApi.Controllers
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.Email),
-                new Claim(ClaimTypes.Role, userEmail.Role)
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             var token = _auth.GenerateAccessToken(claims);
@@ -103,8 +94,8 @@ namespace MyWashApi.Controllers
             {
                 access_token = token.AccessToken,
                 token_type = token.TokenType,
-                user_Id = userEmail.Id,
-                user_name = userEmail.Name,
+                user_Id = user.Id,
+                user_name = user.Name,
                 expires_in = token.ExpiresIn,
                 creation_Time = token.ValidFrom,
                 expiration_Time = token.ValidTo,

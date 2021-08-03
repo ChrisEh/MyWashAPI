@@ -1,8 +1,10 @@
-﻿namespace FoodApi.Models
+﻿namespace MyWashApi.Dtos
 {
-    public class UpdateUserDetails
+    public class UserCreateDto
     {
-        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
         public string Place { get; set; }
         public string PostCode { get; set; }
         public string PhoneNumber { get; set; }

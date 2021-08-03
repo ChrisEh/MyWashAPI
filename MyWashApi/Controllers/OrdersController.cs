@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using FoodApi.Data;
-using FoodApi.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyWashApi.Data.Models;
 
 namespace MyWashApi.Controllers
 {
@@ -15,8 +11,8 @@ namespace MyWashApi.Controllers
     [ApiController]
     public class OrdersController : ControllerBase
     {
-        private FoodDbContext _dbContext;
-        public OrdersController(FoodDbContext dbContext)
+        private MyWashContext _dbContext;
+        public OrdersController(MyWashContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -28,6 +24,7 @@ namespace MyWashApi.Controllers
         public IActionResult PendingOrders()
         {
             var orders = _dbContext.Orders.Where(order => order.IsOrderCompleted == false);
+
             return Ok(orders);
         }
 
@@ -37,15 +34,16 @@ namespace MyWashApi.Controllers
         public IActionResult CompletedOrders()
         {
             var orders = _dbContext.Orders.Where(order => order.IsOrderCompleted == true);
+
             return Ok(orders);
         }
 
         // GET: api/Orders/OrderDetails/5
         [HttpGet("[action]/{orderId}")]
-        public IActionResult OrderDetails(int orderId)
+        public IActionResult OrderDetails(string orderId)
         {
 
-            var orders = _dbContext.Orders.Where(order => order.Id == orderId)
+            var orders = _dbContext.Orders.Where(order => order.Id == new Guid(orderId))
                    .Include(order => order.OrderDetails)
                    .ThenInclude(product => product.Product);
 
@@ -61,6 +59,7 @@ namespace MyWashApi.Controllers
             var orders = (from order in _dbContext.Orders
                           where order.IsOrderCompleted == false
                           select order.IsOrderCompleted).Count();
+
             return Ok(new { PendingOrders = orders });
         }
 
@@ -70,6 +69,7 @@ namespace MyWashApi.Controllers
         public IActionResult OrdersByUser(int userId)
         {
             var orders = _dbContext.Orders.Where(order => order.UserId == userId).OrderByDescending(o => o.OrderPlaced);
+
             return Ok(orders);
         }
 
@@ -80,7 +80,7 @@ namespace MyWashApi.Controllers
             order.IsOrderCompleted = false;
             order.OrderPlaced = DateTime.Now;
             _dbContext.Orders.Add(order);
-            _dbContext.SaveChanges();
+            _dbContext.Orders.Add(order);
 
             var shoppingCartItems = _dbContext.ShoppingCartItems.Where(cart => cart.CustomerId == order.UserId);
             foreach (var item in shoppingCartItems)
@@ -89,20 +89,18 @@ namespace MyWashApi.Controllers
                 {
                     Price = item.Price,
                     TotalAmount = item.TotalAmount,
-                    Qty = item.Qty,
+                    Qty = item.Quantity,
                     ProductId = item.ProductId,
                     OrderId = order.Id,
                 };
                 _dbContext.OrderDetails.Add(orderDetail);
             }
 
-            _dbContext.SaveChanges();
             _dbContext.ShoppingCartItems.RemoveRange(shoppingCartItems);
             _dbContext.SaveChanges();
 
             return Ok(new { OrderId = order.Id });
         }
-
 
         // PUT: api/Orders/MarkOrderComplete/5
         [Authorize(Roles = "Admin")]
@@ -112,12 +110,13 @@ namespace MyWashApi.Controllers
             var entity = _dbContext.Orders.Find(orderId);
             if (entity == null)
             {
-                return NotFound("No order found against this id...");
+                return NotFound($"No order found for id '{orderId}'.");
             }
             else
             {
                 entity.IsOrderCompleted = order.IsOrderCompleted;
                 _dbContext.SaveChanges();
+
                 return Ok("Order completed");
             }
         }

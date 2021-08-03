@@ -1,15 +1,17 @@
+using System;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.IdentityModel.Tokens;
+using MyWashApi.Data.Models;
+using MyWashApi.Data.Repositories;
+using MyWashApi.Service.Services;
 
 namespace MyWashApi
 {
@@ -24,19 +26,19 @@ namespace MyWashApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<RepositoryPatternDemoContext>(options => options.UseSqlServer(Configuration["Database:ConnectionString"]));
-            services.AddDbContext<RepositoryPatternDemoContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+            //services.AddDbContext<MyWashContext>(options => options.UseSqlServer(Configuration["Database:ConnectionString"]));
+            services.AddDbContext<MyWashContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
 
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
-            services.AddTransient<IProductRepository, ProductRepository>();
-            services.AddTransient<ICustomerRepository, CustomerRepository>();
-
-<<<<<<< HEAD:MyWashApi/Startup.cs
-            services.AddTransient<IProductService, ProductService>();
-            services.AddTransient<ICustomerService, CustomerService>();
+            services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IUserService, UserService>();
 
             services.AddControllersWithViews();
-=======
+
+            services.AddControllers();
+            services.AddMvc(option => option.EnableEndpointRouting = false)
+                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(opt => opt.JsonSerializerOptions.MaxDepth = 5);
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                .AddJwtBearer(options =>
                {
@@ -52,39 +54,29 @@ namespace MyWashApi
                        ClockSkew = TimeSpan.Zero,
                    };
                });
-            services.AddDbContext<FoodDbContext>(option => option.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=MyWash"));
+
+            services.AddDbContext<MyWashContext>(option => option.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=MyWash"));
             services.AddHttpContextAccessor();
-<<<<<<< HEAD:MyWashApi/Startup.cs
-<<<<<<< HEAD:MyWashApi/Startup.cs
->>>>>>> main:API/FoodApi/Startup.cs
-=======
->>>>>>> fe88bb6... update users:API/FoodApi/Startup.cs
-=======
->>>>>>> fe88bb6... update users:API/FoodApi/Startup.cs
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MyWashContext foodDbContext)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
 
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
+            foodDbContext.Database.EnsureCreated();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllers();
             });
         }
     }

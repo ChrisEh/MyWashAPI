@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using NetCoreRepositoryAndUnitOfWorkPattern.Data.Models;
+using MyWashApi.Data.Models;
 
 namespace MyWashApi.Data.Repositories
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class, new()
     {
-        protected readonly RepositoryPatternDemoContext RepositoryPatternDemoContext;
+        protected readonly MyWashContext _ctx;
 
-        public Repository(RepositoryPatternDemoContext repositoryPatternDemoContext)
+        public Repository(MyWashContext ctx)
         {
-            RepositoryPatternDemoContext = repositoryPatternDemoContext;
+            _ctx = ctx;
         }
 
         public IQueryable<TEntity> GetAll()
         {
             try
             {
-                return RepositoryPatternDemoContext.Set<TEntity>();
+                return _ctx.Set<TEntity>();
             }
             catch (Exception ex)
             {
@@ -30,19 +30,19 @@ namespace MyWashApi.Data.Repositories
         {
             if (entity == null)
             {
-                throw new ArgumentNullException($"{nameof(AddAsync)} entity must not be null");
+                throw new ArgumentNullException($"{nameof(AddAsync)} entity must not be null.");
             }
 
             try
             {
-                await RepositoryPatternDemoContext.AddAsync(entity);
-                await RepositoryPatternDemoContext.SaveChangesAsync();
+                await _ctx.AddAsync(entity);
+                await _ctx.SaveChangesAsync();
 
                 return entity;
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(entity)} could not be saved: {ex.Message}");
+                throw new Exception($"{nameof(entity)} could not be saved: {ex.Message}.");
             }
         }
 
@@ -50,19 +50,37 @@ namespace MyWashApi.Data.Repositories
         {
             if (entity == null)
             {
-                throw new ArgumentNullException($"{nameof(AddAsync)} entity must not be null");
+                throw new ArgumentNullException($"{nameof(AddAsync)} entity must not be null.");
             }
 
             try
             {
-                RepositoryPatternDemoContext.Update(entity);
-                await RepositoryPatternDemoContext.SaveChangesAsync();
+                _ctx.Update(entity);
+                await _ctx.SaveChangesAsync();
 
                 return entity;
             }
             catch (Exception ex)
             {
-                throw new Exception($"{nameof(entity)} could not be updated: {ex.Message}");
+                throw new Exception($"{nameof(entity)} could not be updated: {ex.Message}.");
+            }
+        }
+
+        public async Task Delete(TEntity entity)
+        {
+            if (entity == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _ctx.Remove(entity);
+                await _ctx.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{nameof(entity)} could not be deleted: {ex.Message}.");
             }
         }
     }

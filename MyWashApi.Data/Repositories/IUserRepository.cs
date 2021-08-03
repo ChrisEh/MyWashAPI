@@ -6,8 +6,8 @@ namespace MyWashApi.Data.Repositories
 {
     public interface IUserRepository : IRepository<User>
     {
-        Task<User> GetCustomerByIdAsync(int id);
+        Task<User> GetUsersByIdAsync(int id);
 
-        Task<List<User>> GetAllCustomersAsync();
+        Task<List<User>> GetAllUsersAsync();
     }
 }

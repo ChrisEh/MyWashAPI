@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
 
 namespace MyWashApi.Data.Models
 {
     public class Product
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Detail { get; set; }
         public string ImageUrl { get; set; }        
@@ -21,10 +17,10 @@ namespace MyWashApi.Data.Models
         //[JsonIgnore]
         public byte[] ImageArray { get; set; }
         
-        [JsonIgnore]
-        public ICollection<OrderDetail> OrderDetails { get; set; }
+        //[JsonIgnore]
+        //public ICollection<OrderDetail> OrderDetails { get; set; }
         
-        [JsonIgnore]
-        public ICollection<ShoppingCartItem> ShoppingCartItems { get; set; }
+        //[JsonIgnore]
+        //public ICollection<ShoppingCart> ShoppingCartItems { get; set; }
     }
 }

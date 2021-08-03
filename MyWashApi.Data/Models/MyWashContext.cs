@@ -2,22 +2,22 @@
 
 namespace MyWashApi.Data.Models
 {
-    public partial class RepositoryPatternDemoContext : DbContext
+    public partial class MyWashContext : DbContext
     {
-        public RepositoryPatternDemoContext()
+        public MyWashContext()
         {
         }
 
-        public RepositoryPatternDemoContext(DbContextOptions<RepositoryPatternDemoContext> options)
+        public MyWashContext(DbContextOptions<MyWashContext> options)
             : base(options)
         {
         }
 
-        public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<Order> Order { get; set; }
-        public virtual DbSet<OrderDetail> OrderDetail { get; set; }
-        public virtual DbSet<Product> Product { get; set; }
-        public virtual DbSet<ShoppingCartItem> ShoppingCartItem { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Order> Orders { get; set; }
+        public virtual DbSet<OrderDetail> OrderDetails { get; set; }
+        public virtual DbSet<Product> Products { get; set; }
+        public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
