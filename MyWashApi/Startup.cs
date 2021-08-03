@@ -54,7 +54,10 @@ namespace MyWashApi
                });
             services.AddDbContext<FoodDbContext>(option => option.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=MyWash"));
             services.AddHttpContextAccessor();
+<<<<<<< HEAD:MyWashApi/Startup.cs
 >>>>>>> main:API/FoodApi/Startup.cs
+=======
+>>>>>>> fe88bb6... update users:API/FoodApi/Startup.cs
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
