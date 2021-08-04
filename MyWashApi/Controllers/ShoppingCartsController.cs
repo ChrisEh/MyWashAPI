@@ -55,14 +55,7 @@ namespace MyWashApi.Controllers
         [HttpDelete("{userId}")]
         public IActionResult Delete(string userId)
         {
-            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User.Id == new Guid(userId));
-
-            if (shoppingCart != null)
-            {
-                _ctx.ShoppingCarts.Remove(shoppingCart);
-            }
-            
-            _ctx.SaveChanges();
+            _shoppingCartService.Delete(new Guid(userId));
 
             return Ok();
         }
