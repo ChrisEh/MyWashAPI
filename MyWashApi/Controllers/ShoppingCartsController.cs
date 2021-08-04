@@ -11,6 +11,7 @@ using System;
 using MyWashApi.Dtos;
 using AutoMapper;
 using MyWashApi.Service.Services;
+using System.Threading.Tasks;
 
 namespace MyWashApi.Controllers
 {
@@ -19,7 +20,7 @@ namespace MyWashApi.Controllers
     [Authorize]
     public class ShoppingCartsController : Controller
     {
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
         private readonly IShoppingCartService _shoppingCartService;
 
         public ShoppingCartsController(IShoppingCartService shoppingCartService, IMapper mapper)
@@ -30,12 +31,12 @@ namespace MyWashApi.Controllers
 
         // GET: api/ShoppingCartItems
         [HttpGet("{userId}")]
-        public IActionResult GetAllShoppingCartProducts(string userId)
+        public async Task<IActionResult> GetAllShoppingCartProductsAsync(Guid userId)
         {
-            if (shoppingCartItems.Count == 0)
-            {
+            var shoppingCartItems = await _shoppingCartService.GetAllShoppingCartProducts(userId);
+
+            if (shoppingCartItems.Count() == 0)
                 return NotFound();
-            }
 
             return Ok(shoppingCartItems);
         }
@@ -44,7 +45,8 @@ namespace MyWashApi.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] ShoppingCartItemsDto shoppingCartItemsDto)
         {
-            _shoppingCartService.AddProducts(shoppingCartItemsDto.ProductIds, shoppingCartItemsDto.UserId);
+            var shoppingCartProducts = _mapper.Map<ShoppingCart>(shoppingCartItemsDto).Products.ToList();
+            _shoppingCartService.AddProducts(shoppingCartProducts, shoppingCartItemsDto.UserId);
 
             return StatusCode(StatusCodes.Status201Created);
         }
