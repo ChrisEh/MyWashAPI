@@ -31,9 +31,9 @@ namespace MyWashApi.Controllers
 
         // GET: api/ShoppingCartItems
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetAllShoppingCartProductsAsync(Guid userId)
+        public IActionResult GetAllShoppingCartItemsAsync(Guid userId)
         {
-            var shoppingCartItems = await _shoppingCartService.GetAllShoppingCartProducts(userId);
+            var shoppingCartItems = _shoppingCartService.GetAllShoppingCartItems(userId);
 
             if (shoppingCartItems.Count() == 0)
                 return NotFound();
@@ -43,10 +43,10 @@ namespace MyWashApi.Controllers
 
         // POST: api/ShoppingCartItems
         [HttpPost]
-        public IActionResult Post([FromBody] ShoppingCartItemsDto shoppingCartItemsDto)
+        public IActionResult Post([FromBody] List<ShoppingCartItemDto> shoppingCartItemDtos)
         {
-            var shoppingCartProducts = _mapper.Map<ShoppingCart>(shoppingCartItemsDto).Products.ToList();
-            _shoppingCartService.AddProducts(shoppingCartProducts, shoppingCartItemsDto.UserId);
+            var shoppingCartItems = shoppingCartItemDtos.Select(s => _mapper.Map<ShoppingCartItem>(s)).ToList();
+            _shoppingCartService.AddShoppingCartItems(shoppingCartItems);
 
             return StatusCode(StatusCodes.Status201Created);
         }
@@ -55,7 +55,8 @@ namespace MyWashApi.Controllers
         [HttpDelete("{userId}")]
         public IActionResult Delete(string userId)
         {
-            _shoppingCartService.Delete(new Guid(userId));
+            var shoppingCartItems = _shoppingCartService.GetAllShoppingCartItems(new Guid(userId));
+            _shoppingCartService.RemoveShoppingCartItems(shoppingCartItems);
 
             return Ok();
         }

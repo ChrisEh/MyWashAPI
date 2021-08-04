@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MyWashApi.Data.Models
 {
-    public class ShoppingCart
+    public class ShoppingCartItem
     {
         public Guid Id { get; set; }
         public User User { get; set; }
-        public List<ShoppingCartItem> ShoppingCartItems { get; set; }
+        public Product Product { get; set; }
+        public int Quantity { get; set; }
     }
 }

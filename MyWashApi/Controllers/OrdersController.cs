@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyWashApi.Data;
 using MyWashApi.Data.Models;
+using MyWashApi.Service.Services;
 
 namespace MyWashApi.Controllers
 {
@@ -11,10 +14,11 @@ namespace MyWashApi.Controllers
     [ApiController]
     public class OrdersController : ControllerBase
     {
-        private MyWashContext _dbContext;
-        public OrdersController(MyWashContext dbContext)
+        private readonly IOrderService _orderService;
+
+        public OrdersController( IOrderService orderService)
         {
-            _dbContext = dbContext;
+            _orderService = orderService;
         }
 
         // For Admin
@@ -23,9 +27,7 @@ namespace MyWashApi.Controllers
         [HttpGet("[action]")]
         public IActionResult PendingOrders()
         {
-            var orders = _dbContext.Orders.Where(order => order.IsOrderCompleted == false);
-
-            return Ok(orders);
+            return Ok(_orderService.GetPendingOrders());
         }
 
         // GET: api/Orders/CompletedOrders
@@ -33,89 +35,54 @@ namespace MyWashApi.Controllers
         [HttpGet("[action]")]
         public IActionResult CompletedOrders()
         {
-            var orders = _dbContext.Orders.Where(order => order.IsOrderCompleted == true);
-
-            return Ok(orders);
+            return Ok(_orderService.GetCompletedOrders());
         }
 
         // GET: api/Orders/OrderDetails/5
         [HttpGet("[action]/{orderId}")]
         public IActionResult OrderDetails(string orderId)
         {
-
-            var orders = _dbContext.Orders.Where(order => order.Id == new Guid(orderId))
-                   .Include(order => order.OrderDetails)
-                   .ThenInclude(product => product.Product);
-
-            return Ok(orders);
+            return Ok(_orderService.GetCompletedOrders());
         }
 
-
-        // GET: api/Orders/OrdersCount
+        // GET: api/Orders/UncompletedOrdersCount
         [Authorize(Roles = "Admin")]
         [HttpGet("[action]")]
-        public IActionResult OrdersCount()
+        public IActionResult UncompletedOrdersCount()
         {
-            var orders = (from order in _dbContext.Orders
-                          where order.IsOrderCompleted == false
-                          select order.IsOrderCompleted).Count();
-
-            return Ok(new { PendingOrders = orders });
+            return Ok(new { PendingOrders = _orderService.GetUncompletedOrdersCount() });
         }
-
 
         // GET: api/Orders/OrdersByUser/5
         [HttpGet("[action]/{userId}")]
-        public IActionResult OrdersByUser(int userId)
+        public IActionResult OrdersByUser(string userId)
         {
-            var orders = _dbContext.Orders.Where(order => order.UserId == userId).OrderByDescending(o => o.OrderPlaced);
-
-            return Ok(orders);
+            return Ok(_orderService.GetOrdersOfUser(new Guid(userId)));
         }
 
         // POST: api/Orders
         [HttpPost]
-        public IActionResult Post([FromBody] Order order)
+        public async Task<IActionResult> PostAsync([FromBody] Order order)
         {
-            order.IsOrderCompleted = false;
-            order.OrderPlaced = DateTime.Now;
-            _dbContext.Orders.Add(order);
-            _dbContext.Orders.Add(order);
+            var newOrder = await _orderService.CreateOrder(order);
 
-            var shoppingCartItems = _dbContext.ShoppingCartItems.Where(cart => cart.CustomerId == order.UserId);
-            foreach (var item in shoppingCartItems)
-            {
-                var orderDetail = new OrderDetail()
-                {
-                    Price = item.Price,
-                    TotalAmount = item.TotalAmount,
-                    Qty = item.Quantity,
-                    ProductId = item.ProductId,
-                    OrderId = order.Id,
-                };
-                _dbContext.OrderDetails.Add(orderDetail);
-            }
-
-            _dbContext.ShoppingCartItems.RemoveRange(shoppingCartItems);
-            _dbContext.SaveChanges();
-
-            return Ok(new { OrderId = order.Id });
+            return Ok(new { OrderId = newOrder.Id });
         }
 
-        // PUT: api/Orders/MarkOrderComplete/5
+        // PUT: api/Orders/CompleteOrder/5
         [Authorize(Roles = "Admin")]
         [HttpPut("[action]/{orderId}")]
-        public IActionResult MarkOrderComplete(int orderId, [FromBody] Order order)
+        public async Task<IActionResult> CompleteOrderAsync(string orderId)
         {
-            var entity = _dbContext.Orders.Find(orderId);
-            if (entity == null)
+            var order = await _orderService.GetOrderById(new Guid(orderId));
+
+            if (order == null)
             {
                 return NotFound($"No order found for id '{orderId}'.");
             }
             else
             {
-                entity.IsOrderCompleted = order.IsOrderCompleted;
-                _dbContext.SaveChanges();
+                await _orderService.CompleteOrder(new Guid(orderId));
 
                 return Ok("Order completed");
             }

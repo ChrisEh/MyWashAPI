@@ -15,19 +15,24 @@ namespace MyWashApi.Service.Services
             _shoppingCartRepository = shoppingCartyRepository;
         }
 
-        public async Task AddProducts(List<Product> products, Guid userId)
+        public async Task AddShoppingCartItems(List<ShoppingCartItem> shoppingCartItems)
         {
-            await _shoppingCartRepository.AddProducts(products, userId);
+            await _shoppingCartRepository.AddShoppingCartItems(shoppingCartItems);
         }
 
-        public async Task Delete(Guid userId)
+        public List<ShoppingCartItem> GetAllShoppingCartItems(Guid userId)
         {
-            await _shoppingCartRepository.Delete(userId);
+            return _shoppingCartRepository.GetAllShoppingCartItems(userId);
         }
 
-        public async Task<List<Product>> GetAllShoppingCartProducts(Guid userId)
+        public async Task RemoveShoppingCartItem(ShoppingCartItem shoppingCartItem)
         {
-            return await _shoppingCartRepository.GetAllShoppingCartProducts(userId);
+            await _shoppingCartRepository.RemoveShoppingCartItem(shoppingCartItem);
+        }
+
+        public async Task RemoveShoppingCartItems(List<ShoppingCartItem> shoppingCartItems)
+        {
+            await _shoppingCartRepository.RemoveShoppingCartItems(shoppingCartItems);
         }
     }
 }

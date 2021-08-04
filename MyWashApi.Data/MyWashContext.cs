@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MyWashApi.Data.Models;
 
-namespace MyWashApi.Data.Models
+namespace MyWashApi.Data
 {
     public partial class MyWashContext : DbContext
     {
@@ -17,6 +18,7 @@ namespace MyWashApi.Data.Models
         public virtual DbSet<Order> Orders { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
         public virtual DbSet<Product> Products { get; set; }
+        public virtual DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

@@ -9,45 +9,42 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using MyWashApi.Data;
 using MyWashApi.Data.Models;
 using MyWashApi.Dtos;
+using MyWashApi.Service.Services;
 
 namespace MyWashApi.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class AccountsController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private IConfiguration _configuration;
         private readonly AuthService _auth;
-        private MyWashContext _ctx;
         private IHttpContextAccessor _httpContextAccessor;
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
+        private readonly IUserService _userService;
 
-        public AccountsController(MyWashContext ctx, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, 
-            IMapper mapper)
+        public UsersController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, 
+            IMapper mapper, IUserService userService)
         {
             _configuration = configuration;
             _auth = new AuthService(_configuration);
-            _ctx = ctx;
             _httpContextAccessor = httpContextAccessor;
             _mapper = mapper;
+            _userService = userService;
         }
 
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Register(UserCreateDto user)
         {
-            if (_ctx.Users.SingleOrDefault(u => u.Email == user.Email) != null) 
+            if (await _userService.UserExists(user.Email)) 
                 return BadRequest("User with this email already exists.");
 
-            var newUser = _mapper.Map<UserCreateDto, User>(user);
-            newUser.Role = "User";
-            newUser.Password = SecurePasswordHasherHelper.Hash(user.Password);
-
-            _ctx.Users.Add(newUser);
-
-            await _ctx.SaveChangesAsync();
+            var newUser = _mapper.Map<User>(user);
+            await _userService.Register(newUser);
 
             return StatusCode(StatusCodes.Status201Created);
         }
@@ -55,7 +52,7 @@ namespace MyWashApi.Controllers
         [HttpGet("{userId}")]
         public IActionResult GetUser(string userId)
         {
-            var user = _ctx.Users.FirstOrDefault(u => u.Id.ToString() == userId);
+            var user = _userService.GetUser(new Guid(userId));
             if (user == null) return StatusCode(StatusCodes.Status404NotFound);
 
             return Ok(user);
@@ -64,20 +61,22 @@ namespace MyWashApi.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateUserDetails(UserUpdateDto userUpdateDto)
         {
-            var userToUpdate = _mapper.Map<UserUpdateDto, User>(userUpdateDto);
+            var userToUpdate = _mapper.Map<User>(userUpdateDto);
             if (userToUpdate == null) return StatusCode(StatusCodes.Status404NotFound);
-            _ctx.Update(userToUpdate);
-            await _ctx.SaveChangesAsync();
+            await _userService.Update(userToUpdate);
 
             return Ok();
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult Login(UserLoginDto userLoginData)
+        public async Task<IActionResult> Login(UserLoginDto userLoginData)
         {
-            var user = _mapper.Map<UserLoginDto, User>(userLoginData);
+            var user = _mapper.Map<User>(userLoginData);
+            user = await _userService.GetUser(user.Email);
             if (user == null) return StatusCode(StatusCodes.Status404NotFound);
+
+
             var hashedPassword = user.Password;
             if (!SecurePasswordHasherHelper.Verify(user.Password, hashedPassword)) return Unauthorized();
             var claims = new[]

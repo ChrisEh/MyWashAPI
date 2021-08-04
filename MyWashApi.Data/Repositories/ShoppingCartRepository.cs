@@ -6,69 +6,84 @@ using MyWashApi.Data.Models;
 
 namespace MyWashApi.Data.Repositories
 {
-    public class ShoppingCartRepository : Repository<ShoppingCart>, IShoppingCartRepository
+    public class ShoppingCartRepository : Repository<ShoppingCartItem>, IShoppingCartRepository
     {
         public ShoppingCartRepository(MyWashContext ctx) : base(ctx)
         {
         }
 
-        public async Task AddProducts(List<Guid> productIds, Guid userId)
+        public async Task AddShoppingCartItems(List<ShoppingCartItem> shoppingCartItems)
         {
+            var user = shoppingCartItems.FirstOrDefault().User;
+            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User == user);
+
+            if (shoppingCart == null)
+            {
+                _ctx.ShoppingCarts.Add(new ShoppingCart()
+                {
+                    User = user,
+                    ShoppingCartItems = shoppingCartItems
+                });
+            }
+            else
+            {
+                foreach (var shoppingCartItem in shoppingCart.ShoppingCartItems)
+                {
+                    var existingShoppingCartItem = shoppingCart.ShoppingCartItems.FirstOrDefault(s => s.Product.Id == shoppingCartItem.Product.Id);
+
+                    if (existingShoppingCartItem == null)
+                    {
+                        shoppingCart.ShoppingCartItems.Add(shoppingCartItem);
+                    }
+                    else
+                    {
+                        existingShoppingCartItem.Quantity++;
+                    }
+                }
+            }
+
+            await _ctx.SaveChangesAsync();
+        }
+
+        public async Task RemoveShoppingCartItems(List<ShoppingCartItem> shoppingCartItems)
+        {
+            var user = shoppingCartItems.FirstOrDefault().User;
+            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User == user);
+            if (shoppingCart != null)
+            {
+                shoppingCartItems.ForEach(s => shoppingCart.ShoppingCartItems.Remove(shoppingCart.ShoppingCartItems.FirstOrDefault(s => s.Product == s.Product)));
+            }
+
+            if (shoppingCart.ShoppingCartItems.Count() == 0)
+                _ctx.Remove(shoppingCart);
+
+            await _ctx.SaveChangesAsync();
+        }
+
+        public async Task RemoveShoppingCartItem(ShoppingCartItem shoppingCartItem)
+        {
+            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User == shoppingCartItem.User);
+            if (shoppingCart != null)
+            {
+                shoppingCart.ShoppingCartItems.Remove(shoppingCart.ShoppingCartItems.FirstOrDefault(s => s.Product == s.Product));
+            }
+
+            if (shoppingCart.ShoppingCartItems.Count() == 0)
+                _ctx.Remove(shoppingCart);
+
+            await _ctx.SaveChangesAsync();
+        }
+
+        public List<ShoppingCartItem> GetAllShoppingCartItems(Guid userId)
+        {
+            var list = new List<ShoppingCartItem>();
             var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User.Id == userId);
 
             if (shoppingCart == null)
             {
-                _ctx.ShoppingCarts.Add(shoppingCart);
+                return list;
             }
-            else
-            {
-                productIds.ForEach(p => shoppingCart.Products.Add(p));
-            }
-
-            await _ctx.SaveChangesAsync();
-        }
-
-        public async Task RemoveProducts(List<Product> products, Guid userId)
-        {
-            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User.Id == userId);
-            if (shoppingCart != null)
-            {
-                products.ForEach(p => shoppingCart.Products.Remove(shoppingCart.Products.FirstOrDefault(p => p.Id == p.Id)));
-            }
-
-            if (shoppingCart.Products.Count() == 0)
-                _ctx.Remove(shoppingCart);
-
-            await _ctx.SaveChangesAsync();
-        }
-
-        public async Task RemoveProduct(Product product, Guid userId)
-        {
-            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User.Id == userId);
-            if (shoppingCart != null)
-            {
-                shoppingCart.Products.Remove(shoppingCart.Products.FirstOrDefault(p => p.Id == p.Id));
-            }
-
-            if (shoppingCart.Products.Count() == 0)
-                _ctx.Remove(shoppingCart);
-
-            await _ctx.SaveChangesAsync();
-        }
-
-        public Task<List<Product>> GetAllShoppingCartProducts(Guid userId)
-        {
-
-        }
-
-        public Task AddProducts(List<Product> products, Guid userId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Delete(Guid userId)
-        {
-            throw new NotImplementedException();
+            return shoppingCart.ShoppingCartItems;
         }
     }
 }
