@@ -10,6 +10,5 @@ namespace MyWashApi.Dtos
         public string PhoneNumber { get; set; }
         public string StreetName { get; set; }
         public string HouseNumber { get; set; }
-        public string Password { get; set; }
     }
 }

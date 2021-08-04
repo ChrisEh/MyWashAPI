@@ -50,9 +50,9 @@ namespace MyWashApi.Controllers
         }
 
         [HttpGet("{userId}")]
-        public IActionResult GetUser(string userId)
+        public async Task<IActionResult> GetUserAsync(string userId)
         {
-            var user = _userService.GetUser(new Guid(userId));
+            var user = await _userService.GetUser(new Guid(userId));
             if (user == null) return StatusCode(StatusCodes.Status404NotFound);
 
             return Ok(user);
@@ -61,7 +61,14 @@ namespace MyWashApi.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateUserDetails(UserUpdateDto userUpdateDto)
         {
-            var userToUpdate = _mapper.Map<User>(userUpdateDto);
+            var userToUpdate = await _userService.GetUser(userUpdateDto.Id);
+            userToUpdate.Name = userToUpdate.Name;
+            userToUpdate.HouseNumber = userToUpdate.HouseNumber;
+            userToUpdate.Orders = userToUpdate.Orders;
+            userToUpdate.Place = userToUpdate.Place;
+            userToUpdate.PostCode = userUpdateDto.PostCode;
+            userToUpdate.PhoneNumber = userUpdateDto.PhoneNumber;
+
             if (userToUpdate == null) return StatusCode(StatusCodes.Status404NotFound);
             await _userService.Update(userToUpdate);
 
@@ -72,13 +79,12 @@ namespace MyWashApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login(UserLoginDto userLoginData)
         {
-            var user = _mapper.Map<User>(userLoginData);
-            user = await _userService.GetUser(user.Email);
+            var user = await _userService.GetUser(userLoginData.Email);
+
             if (user == null) return StatusCode(StatusCodes.Status404NotFound);
 
-
             var hashedPassword = user.Password;
-            if (!SecurePasswordHasherHelper.Verify(user.Password, hashedPassword)) return Unauthorized();
+            if (!SecurePasswordHasherHelper.Verify(userLoginData.Password, hashedPassword)) return Unauthorized();
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),

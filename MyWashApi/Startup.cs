@@ -39,7 +39,10 @@ namespace MyWashApi
             services.AddControllers();
             services.AddMvc(option => option.EnableEndpointRouting = false)
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(opt => opt.JsonSerializerOptions.MaxDepth = 5);
-
+            services.AddControllersWithViews()
+                .AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
             services.AddDbContext<MyWashContext>(option => option.UseSqlServer(Configuration["Database:ConnectionString"]));
             services.AddHttpContextAccessor();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
