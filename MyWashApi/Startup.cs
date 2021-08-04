@@ -10,10 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using MyWashApi.Data;
-using MyWashApi.Data.Models;
 using MyWashApi.Data.Repositories;
 using MyWashApi.Service.Services;
-using AutoMapper;
 using Microsoft.OpenApi.Models;
 
 namespace MyWashApi
@@ -42,11 +40,11 @@ namespace MyWashApi
             services.AddMvc(option => option.EnableEndpointRouting = false)
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(opt => opt.JsonSerializerOptions.MaxDepth = 5);
 
-            services.AddDbContext<MyWashContext>(option => option.UseSqlServer(@"Data Source=127.0.0.1,1433;Initial Catalog=MyWashDB;User ID=sa;Password=Password."));
+            services.AddDbContext<MyWashContext>(option => option.UseSqlServer(Configuration["Database:ConnectionString"]));
             services.AddHttpContextAccessor();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-            // Swagger
+            // Swagger.
             services.AddSwaggerGen(swagger =>
             {
                 swagger.SwaggerDoc("v1", new OpenApiInfo

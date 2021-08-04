@@ -4,8 +4,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:45345",
-      "sslPort": 44368
+      "applicationUrl": "http://192.168.0.8:45345",
+      "sslPort": 44369
     }
   },
   "profiles": {
@@ -20,7 +20,6 @@
     "MyWashApi": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "weatherforecast",
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
