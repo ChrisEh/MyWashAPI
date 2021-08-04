@@ -1,10 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyWashApi.Data.Models;
+using System;
 
 namespace MyWashApi.Data
 {
     public partial class MyWashContext : DbContext
     {
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Order> Orders { get; set; }
+        public virtual DbSet<OrderDetail> OrderDetails { get; set; }
+        public virtual DbSet<Product> Products { get; set; }
+        public virtual DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
+        public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
+
         public MyWashContext()
         {
         }
@@ -14,12 +22,10 @@ namespace MyWashApi.Data
         {
         }
 
-        public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<Order> Orders { get; set; }
-        public virtual DbSet<OrderDetail> OrderDetails { get; set; }
-        public virtual DbSet<Product> Products { get; set; }
-        public virtual DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
-        public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
+        internal object FindAsync<T>(Func<object, bool> p)
+        {
+            throw new NotImplementedException();
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

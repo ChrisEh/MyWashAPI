@@ -10,9 +10,9 @@ namespace MyWashApi.Service.Services
     {
         private readonly IShoppingCartRepository _shoppingCartRepository;
 
-        public ShoppingCartService(IShoppingCartRepository shoppingCartyRepository)
+        public ShoppingCartService(IShoppingCartRepository shoppingCartRepository)
         {
-            _shoppingCartRepository = shoppingCartyRepository;
+            _shoppingCartRepository = shoppingCartRepository;
         }
 
         public async Task AddShoppingCartItems(List<ShoppingCartItem> shoppingCartItems)

@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using FoodApi.Data;
-using FoodApi.Models;
-using ImageUploader;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MyWashApi.Data.Models;
+using MyWashApi.Service.Services;
 
 namespace MyWashApi.Controllers
 {
@@ -17,133 +13,75 @@ namespace MyWashApi.Controllers
     [Authorize]
     public class ProductsController : ControllerBase
     {
-        private FoodDbContext _dbContext;
-        public ProductsController(FoodDbContext dbContext)
+        private readonly IProductService _productService;
+
+        public ProductsController(IProductService productService)
         {
-            _dbContext = dbContext;
+            _productService = productService;
         }
+
         // GET: api/Products
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok(_dbContext.Products);
+            return Ok(_productService.GetProducts());
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public IActionResult Get(string id)
         {
-            return Ok(_dbContext.Products.Find(id));
+            return Ok(_productService.GetProduct(new Guid(id)));
         }
-
-        // GET: api/Products/ProductsByCategory/5
-        [HttpGet("[action]/{categoryId}")]
-        public IActionResult ProductsByCategory(int categoryId)
-        {
-            var products = from v in _dbContext.Products
-                           where v.CategoryId == categoryId
-                           select new
-                           {
-                               Id = v.Id,
-                               Name = v.Name,
-                               Price = v.Price,
-                               Detail = v.Detail,
-                               CategoryId = v.CategoryId,
-                               ImageUrl = v.ImageUrl
-                           };
-
-            return Ok(products);
-        }
-
-        // GET: api/Products/PopularProducts
-        [HttpGet("[action]")]
-        public IActionResult PopularProducts()
-        {
-            var products = from v in _dbContext.Products
-                           where v.IsPopularProduct == true
-                           select new
-                           {
-                               Id = v.Id,
-                               Name = v.Name,
-                               Price = v.Price,
-                               ImageUrl = v.ImageUrl
-                           };
-
-            return Ok(products);
-        }
-
 
         // POST: api/Products
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult Post([FromBody] Product product)
+        public async Task<IActionResult> Post([FromBody] Product product)
         {
-            var stream = new MemoryStream(product.ImageArray);
-            var guid = Guid.NewGuid().ToString();
-            var file = $"{guid}.jpg";
-            var folder = "wwwroot";
-            var response = FilesHelper.UploadImage(stream, folder, file);
-            if (!response)
+            try
             {
-                return BadRequest();
+                await _productService.CreateProduct(product);
             }
-            else
+            catch (Exception e)
             {
-                product.ImageUrl = file;
-                _dbContext.Products.Add(product);
-                _dbContext.SaveChanges();
-                return StatusCode(StatusCodes.Status201Created);
+                return BadRequest(e.Message);
             }
+
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         // PUT: api/Products/5
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Product product)
+        public async Task<ActionResult> Put(int id, [FromBody] Product product)
         {
-            var entity = _dbContext.Products.Find(id);
-            if (entity == null)
+            try
             {
-                return NotFound("No product found against this id...");
+                await _productService.UpdateProduct(product);
+                return Ok();
             }
-
-            var stream = new MemoryStream(product.ImageArray);
-            var guid = Guid.NewGuid().ToString();
-            var file = $"{guid}.jpg";
-            var folder = "wwwroot";
-            var response = FilesHelper.UploadImage(stream, folder, file);
-            if (!response)
+            catch (Exception e)
             {
-                return BadRequest();
-            }
-            else
-            {
-                entity.CategoryId = product.CategoryId;
-                entity.Name = product.Name;
-                entity.ImageUrl = file;
-                entity.Price = product.Price;
-                entity.Detail = product.Detail;
-                _dbContext.SaveChanges();
-                return Ok("Product Updated Successfully...");
+                return BadRequest(e.Message);
             }
         }
 
         // DELETE: api/ApiWithActions/5
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
-            var product = _dbContext.Products.Find(id);
-            if (product == null)
+            try
             {
-                return NotFound("No product found against this id...");
+                await _productService.DeleteProduct(new Guid(id));
+
+                return Ok();
             }
-            else
+            catch (Exception e)
             {
-                _dbContext.Products.Remove(product);
-                _dbContext.SaveChanges();
-                return Ok("Product deleted...");
+                return BadRequest(e.Message);
             }
         }
     }

@@ -15,13 +15,13 @@ namespace MyWashApi.Data.Repositories
         public async Task AddShoppingCartItems(List<ShoppingCartItem> shoppingCartItems)
         {
             var user = shoppingCartItems.FirstOrDefault().User;
-            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User == user);
+            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.UserId == user.Id);
 
             if (shoppingCart == null)
             {
                 _ctx.ShoppingCarts.Add(new ShoppingCart()
                 {
-                    User = user,
+                    UserId = user.Id,
                     ShoppingCartItems = shoppingCartItems
                 });
             }
@@ -48,7 +48,7 @@ namespace MyWashApi.Data.Repositories
         public async Task RemoveShoppingCartItems(List<ShoppingCartItem> shoppingCartItems)
         {
             var user = shoppingCartItems.FirstOrDefault().User;
-            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User == user);
+            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.UserId == user.Id);
             if (shoppingCart != null)
             {
                 shoppingCartItems.ForEach(s => shoppingCart.ShoppingCartItems.Remove(shoppingCart.ShoppingCartItems.FirstOrDefault(s => s.Product == s.Product)));
@@ -62,7 +62,7 @@ namespace MyWashApi.Data.Repositories
 
         public async Task RemoveShoppingCartItem(ShoppingCartItem shoppingCartItem)
         {
-            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User == shoppingCartItem.User);
+            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.UserId == shoppingCartItem.User.Id);
             if (shoppingCart != null)
             {
                 shoppingCart.ShoppingCartItems.Remove(shoppingCart.ShoppingCartItems.FirstOrDefault(s => s.Product == s.Product));
@@ -77,7 +77,7 @@ namespace MyWashApi.Data.Repositories
         public List<ShoppingCartItem> GetAllShoppingCartItems(Guid userId)
         {
             var list = new List<ShoppingCartItem>();
-            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.User.Id == userId);
+            var shoppingCart = _ctx.ShoppingCarts.FirstOrDefault(s => s.UserId == userId);
 
             if (shoppingCart == null)
             {

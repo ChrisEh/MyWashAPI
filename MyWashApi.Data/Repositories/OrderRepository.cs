@@ -51,7 +51,7 @@ namespace MyWashApi.Data.Repositories
             newOrder.OrderPlaced = DateTime.Now;
             _ctx.Orders.Add(newOrder);
 
-            var shoppingCart = await _ctx.ShoppingCarts.FirstOrDefaultAsync(s => s.User == newOrder.User);
+            var shoppingCart = await _ctx.ShoppingCarts.FirstOrDefaultAsync(s => s.UserId == newOrder.User.Id);
 
             foreach (var shoppingCartItem in shoppingCart.ShoppingCartItems)
             {

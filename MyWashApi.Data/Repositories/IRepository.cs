@@ -10,5 +10,7 @@ namespace MyWashApi.Data.Repositories
         Task<TEntity> AddAsync(TEntity entity);
 
         Task<TEntity> UpdateAsync(TEntity entity);
+
+        Task Delete(TEntity entity);
     }
 }

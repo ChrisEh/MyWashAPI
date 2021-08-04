@@ -6,7 +6,7 @@ namespace MyWashApi.Data.Models
     public class ShoppingCart
     {
         public Guid Id { get; set; }
-        public User User { get; set; }
+        public Guid UserId { get; set; }
         public List<ShoppingCartItem> ShoppingCartItems { get; set; }
     }
 }

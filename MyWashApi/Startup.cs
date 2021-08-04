@@ -9,9 +9,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using MyWashApi.Data;
 using MyWashApi.Data.Models;
 using MyWashApi.Data.Repositories;
 using MyWashApi.Service.Services;
+using AutoMapper;
+using Microsoft.OpenApi.Models;
 
 namespace MyWashApi
 {
@@ -27,7 +30,7 @@ namespace MyWashApi
         public void ConfigureServices(IServiceCollection services)
         {
             //services.AddDbContext<MyWashContext>(options => options.UseSqlServer(Configuration["Database:ConnectionString"]));
-            services.AddDbContext<MyWashContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+            //services.AddDbContext<MyWashContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
 
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<IUserRepository, UserRepository>();
@@ -38,6 +41,20 @@ namespace MyWashApi
             services.AddControllers();
             services.AddMvc(option => option.EnableEndpointRouting = false)
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddJsonOptions(opt => opt.JsonSerializerOptions.MaxDepth = 5);
+
+            services.AddDbContext<MyWashContext>(option => option.UseSqlServer(@"Data Source=127.0.0.1,1433;Initial Catalog=MyWashDB;User ID=sa;Password=Password."));
+            services.AddHttpContextAccessor();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            // Swagger
+            services.AddSwaggerGen(swagger =>
+            {
+                swagger.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "MyWash API",
+                    Version = "v1.1"
+                });
+            });
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                .AddJwtBearer(options =>
@@ -54,13 +71,9 @@ namespace MyWashApi
                        ClockSkew = TimeSpan.Zero,
                    };
                });
-
-            services.AddDbContext<MyWashContext>(option => option.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=MyWash"));
-            services.AddHttpContextAccessor();
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MyWashContext foodDbContext)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MyWashContext ctx)
         {
             if (env.IsDevelopment())
             {
@@ -72,11 +85,18 @@ namespace MyWashApi
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            foodDbContext.Database.EnsureCreated();
+            ctx.Database.EnsureCreated();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            // Swagger.
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyWash API");
             });
         }
     }
