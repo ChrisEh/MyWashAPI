@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyWashApi.Data;
 
 namespace MyWashApi.Data.Migrations
 {
     [DbContext(typeof(MyWashContext))]
-    partial class MyWashContextModelSnapshot : ModelSnapshot
+    [Migration("20210805150721_pickupStatusAdded")]
+    partial class pickupStatusAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
