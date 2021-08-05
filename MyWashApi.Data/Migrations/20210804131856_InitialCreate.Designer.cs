@@ -21,7 +21,7 @@ namespace MyWashApi.Data.Migrations
                 .HasAnnotation("ProductVersion", "5.0.8")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("MyWashApi.Data.Models.Order", b =>
+            modelBuilder.Entity("MyWashApi.Data.Models.Pickup", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,13 +33,13 @@ namespace MyWashApi.Data.Migrations
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsOrderCompleted")
+                    b.Property<bool>("IsPickupCompleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("OrderPlaced")
+                    b.Property<DateTime>("PickupPlaced")
                         .HasColumnType("datetime2");
 
-                    b.Property<double>("OrderTotal")
+                    b.Property<double>("PickupTotal")
                         .HasColumnType("float");
 
                     b.Property<string>("Phone")
@@ -52,16 +52,16 @@ namespace MyWashApi.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Pickups");
                 });
 
-            modelBuilder.Entity("MyWashApi.Data.Models.OrderDetail", b =>
+            modelBuilder.Entity("MyWashApi.Data.Models.PickupDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("OrderId")
+                    b.Property<Guid>("PickupId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("Price")
@@ -78,11 +78,11 @@ namespace MyWashApi.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("PickupId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("PickupDetails");
                 });
 
             modelBuilder.Entity("MyWashApi.Data.Models.Product", b =>
@@ -206,20 +206,20 @@ namespace MyWashApi.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("MyWashApi.Data.Models.Order", b =>
+            modelBuilder.Entity("MyWashApi.Data.Models.Pickup", b =>
                 {
                     b.HasOne("MyWashApi.Data.Models.User", "User")
-                        .WithMany("Orders")
+                        .WithMany("Pickups")
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MyWashApi.Data.Models.OrderDetail", b =>
+            modelBuilder.Entity("MyWashApi.Data.Models.PickupDetail", b =>
                 {
-                    b.HasOne("MyWashApi.Data.Models.Order", "Order")
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("OrderId")
+                    b.HasOne("MyWashApi.Data.Models.Pickup", "Pickup")
+                        .WithMany("PickupDetails")
+                        .HasForeignKey("PickupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -229,7 +229,7 @@ namespace MyWashApi.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Order");
+                    b.Navigation("Pickup");
 
                     b.Navigation("Product");
                 });
@@ -262,9 +262,9 @@ namespace MyWashApi.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MyWashApi.Data.Models.Order", b =>
+            modelBuilder.Entity("MyWashApi.Data.Models.Pickup", b =>
                 {
-                    b.Navigation("OrderDetails");
+                    b.Navigation("PickupDetails");
                 });
 
             modelBuilder.Entity("MyWashApi.Data.Models.ShoppingCart", b =>
@@ -274,7 +274,7 @@ namespace MyWashApi.Data.Migrations
 
             modelBuilder.Entity("MyWashApi.Data.Models.User", b =>
                 {
-                    b.Navigation("Orders");
+                    b.Navigation("Pickups");
 
                     b.Navigation("ShoppingCart");
                 });

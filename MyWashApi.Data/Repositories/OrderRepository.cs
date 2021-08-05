@@ -7,73 +7,48 @@ using System.Threading.Tasks;
 
 namespace MyWashApi.Data.Repositories
 {
-    public class OrderRepository : Repository<Order>, IOrderRepository
+    public class PickupRepository : Repository<Pickup>, IPickupRepository
     {
-        public OrderRepository(MyWashContext ctx) : base(ctx)
+        public PickupRepository(MyWashContext ctx) : base(ctx)
         {
         }
 
-        public async Task<Order> GetOrderById(Guid orderId)
+        public async Task<Pickup> GetPickupById(Guid pickupId)
         {
-            return await _ctx.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            return await _ctx.Pickups.FirstOrDefaultAsync(o => o.Id == pickupId);
         }
-        public List<Order> GetPendingOrders()
+        public List<Pickup> GetPendingPickups()
         {
-            return _ctx.Orders.Where(o => !o.IsOrderCompleted).ToList();
-        }
-
-        public List<Order> GetCompletedOrders()
-        {
-            return _ctx.Orders.Where(o => o.IsOrderCompleted).ToList();
+            return _ctx.Pickups.Where(o => !o.IsPickupCompleted).ToList();
         }
 
-        public List<Order> GetOrderDetails(Guid orderId)
+        public List<Pickup> GetCompletedPickups()
         {
-            return _ctx.Orders.Where(o => o.Id == orderId)
-                .Include(o => o.OrderDetails)
-                .ThenInclude(o => o.Product).ToList();
+            return _ctx.Pickups.Where(o => o.IsPickupCompleted).ToList();
         }
 
-        public int GetUncompletedOrdersCount()
+        public int GetUncompletedPickupsCount()
         {
-            return _ctx.Orders.Where(o => !o.IsOrderCompleted).Count();
+            return _ctx.Pickups.Where(o => !o.IsPickupCompleted).Count();
         }
 
-        public List<Order> GetOrdersOfUser(Guid userId)
+        public List<Pickup> GetPickupsOfUser(Guid userId)
         {
-            return _ctx.Orders.Where(o => o.User.Id == userId)
-                .OrderByDescending(o => o.OrderPlaced).ToList();
+            return _ctx.Pickups.Where(o => o.User.Id == userId)
+                .OrderByDescending(o => o.PickupPlaced).ToList();
         }
 
-        public async Task<Order> CreateOrder(Order newOrder)
+        public async Task<Pickup> CreatePickup(Pickup newPickup)
         {
-            newOrder.IsOrderCompleted = false;
-            newOrder.OrderPlaced = DateTime.Now;
-            _ctx.Orders.Add(newOrder);
-
-            var shoppingCart = await _ctx.ShoppingCarts.FirstOrDefaultAsync(s => s.UserId == newOrder.User.Id);
-
-            foreach (var shoppingCartItem in shoppingCart.ShoppingCartItems)
-            {
-                _ctx.OrderDetails.Add(new OrderDetail()
-                {
-                    Price = shoppingCartItem.Product.Price,
-                    TotalAmount = shoppingCartItem.Product.Price * shoppingCartItem.Quantity,
-                    Qty = shoppingCartItem.Quantity,
-                    ProductId = shoppingCartItem.Product.Id,
-                    OrderId = shoppingCartItem.Id
-                });
-            }
-
-            _ctx.ShoppingCarts.Remove(shoppingCart);
+            _ctx.Pickups.Add(newPickup);
             await _ctx.SaveChangesAsync();
-            return newOrder;
+            return newPickup;
         }
 
-        public async Task CompleteOrder(Guid orderId)
+        public async Task CompletePickup(Guid pickupId)
         {
-            var order = await _ctx.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
-            order.IsOrderCompleted = true;
+            var pickup = await _ctx.Pickups.FirstOrDefaultAsync(o => o.Id == pickupId);
+            pickup.IsPickupCompleted = true;
             await _ctx.SaveChangesAsync();
         }
     }

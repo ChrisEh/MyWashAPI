@@ -64,7 +64,7 @@ namespace MyWashApi.Controllers
             var userToUpdate = await _userService.GetUser(userUpdateDto.Id);
             userToUpdate.Name = userToUpdate.Name;
             userToUpdate.HouseNumber = userToUpdate.HouseNumber;
-            userToUpdate.Orders = userToUpdate.Orders;
+            userToUpdate.Pickups = userToUpdate.Pickups;
             userToUpdate.Place = userToUpdate.Place;
             userToUpdate.PostCode = userUpdateDto.PostCode;
             userToUpdate.PhoneNumber = userUpdateDto.PhoneNumber;

@@ -11,7 +11,6 @@ namespace MyWashApi.Profiles
             CreateMap<User, UserReadDto>();
             CreateMap<UserUpdateDto, User>();
             CreateMap<UserCreateDto, User>();
-            CreateMap<ShoppingCartItemDto, ShoppingCartItem>();
         }
     }
 }

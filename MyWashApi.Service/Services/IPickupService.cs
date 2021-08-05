@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MyWashApi.Data.Repositories
+namespace MyWashApi.Service.Services
 {
-    public interface IPickupRepository : IRepository<Pickup>
+    public interface IPickupService
     {
         Task<Pickup> GetPickupById(Guid pickupId);
         List<Pickup> GetPendingPickups();

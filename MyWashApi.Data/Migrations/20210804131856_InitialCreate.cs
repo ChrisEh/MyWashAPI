@@ -45,7 +45,7 @@ namespace MyWashApi.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Orders",
+                name: "Pickups",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -53,15 +53,15 @@ namespace MyWashApi.Data.Migrations
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OrderTotal = table.Column<double>(type: "float", nullable: false),
-                    OrderPlaced = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsOrderCompleted = table.Column<bool>(type: "bit", nullable: false)
+                    PickupTotal = table.Column<double>(type: "float", nullable: false),
+                    PickupPlaced = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsPickupCompleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.PrimaryKey("PK_Pickups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Orders_Users_UserId",
+                        name: "FK_Pickups_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -87,27 +87,27 @@ namespace MyWashApi.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrderDetails",
+                name: "PickupDetails",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Price = table.Column<double>(type: "float", nullable: false),
                     Qty = table.Column<int>(type: "int", nullable: false),
                     TotalAmount = table.Column<double>(type: "float", nullable: false),
-                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PickupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderDetails", x => x.Id);
+                    table.PrimaryKey("PK_PickupDetails", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OrderDetails_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
+                        name: "FK_PickupDetails_Pickups_PickupId",
+                        column: x => x.PickupId,
+                        principalTable: "Pickups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderDetails_Products_ProductId",
+                        name: "FK_PickupDetails_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
@@ -148,18 +148,18 @@ namespace MyWashApi.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderDetails_OrderId",
-                table: "OrderDetails",
-                column: "OrderId");
+                name: "IX_PickupDetails_PickupId",
+                table: "PickupDetails",
+                column: "PickupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderDetails_ProductId",
-                table: "OrderDetails",
+                name: "IX_PickupDetails_ProductId",
+                table: "PickupDetails",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Orders_UserId",
-                table: "Orders",
+                name: "IX_Pickups_UserId",
+                table: "Pickups",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -187,13 +187,13 @@ namespace MyWashApi.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "OrderDetails");
+                name: "PickupDetails");
 
             migrationBuilder.DropTable(
                 name: "ShoppingCartItems");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "Pickups");
 
             migrationBuilder.DropTable(
                 name: "Products");

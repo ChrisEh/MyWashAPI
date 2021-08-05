@@ -10,17 +10,12 @@ namespace MyWashApi.Data.Models
         public string Detail { get; set; }
         public string ImageUrl { get; set; }        
         public double Price { get; set; }
-        public bool IsPopularProduct { get; set; }  
-        public int CategoryId { get; set; }
 
         [NotMapped]
         //[JsonIgnore]
         public byte[] ImageArray { get; set; }
         
         //[JsonIgnore]
-        //public ICollection<OrderDetail> OrderDetails { get; set; }
-        
-        //[JsonIgnore]
-        //public ICollection<ShoppingCart> ShoppingCartItems { get; set; }
+        //public ICollection<PickupDetail> PickupDetails { get; set; }
     }
 }

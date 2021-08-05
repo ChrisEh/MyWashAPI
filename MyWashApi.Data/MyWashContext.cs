@@ -7,11 +7,8 @@ namespace MyWashApi.Data
     public partial class MyWashContext : DbContext
     {
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<Order> Orders { get; set; }
-        public virtual DbSet<OrderDetail> OrderDetails { get; set; }
+        public virtual DbSet<Pickup> Pickups { get; set; }
         public virtual DbSet<Product> Products { get; set; }
-        public virtual DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
-        public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; }
 
         public MyWashContext()
         {
