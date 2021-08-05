@@ -12,7 +12,7 @@ namespace MyWashApi.Data.Repositories
         List<Pickup> GetCompletedPickups();
         int GetUncompletedPickupsCount();
         List<Pickup> GetPickupsOfUser(Guid userId);
-        Task<Pickup> CreatePickup(Pickup newPickup);
+        Task<Pickup> CreatePickup(Pickup newPickup, Guid userId);
         Task CompletePickup(Guid pickupId);
     }
 }

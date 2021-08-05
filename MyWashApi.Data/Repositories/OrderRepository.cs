@@ -38,8 +38,9 @@ namespace MyWashApi.Data.Repositories
                 .OrderByDescending(o => o.PickupPlaced).ToList();
         }
 
-        public async Task<Pickup> CreatePickup(Pickup newPickup)
+        public async Task<Pickup> CreatePickup(Pickup newPickup, Guid userId)
         {
+            newPickup.User = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             _ctx.Pickups.Add(newPickup);
             await _ctx.SaveChangesAsync();
             return newPickup;

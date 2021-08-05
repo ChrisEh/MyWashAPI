@@ -40,9 +40,9 @@ namespace MyWashApi.Service.Services
             return _pickupRepository.GetPickupsOfUser(userId);
         }
 
-        public async Task<Pickup> CreatePickup(Pickup newPickup)
+        public async Task<Pickup> CreatePickup(Pickup newPickup, Guid userId)
         {
-            return await _pickupRepository.CreatePickup(newPickup);
+            return await _pickupRepository.CreatePickup(newPickup, userId);
         }
 
         public async Task CompletePickup(Guid pickupId)

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyWashApi.Data.Models;
+using MyWashApi.Dtos;
 using MyWashApi.Service.Services;
 
 namespace MyWashApi.Controllers
@@ -12,10 +14,12 @@ namespace MyWashApi.Controllers
     public class PickupsController : ControllerBase
     {
         private readonly IPickupService _pickupService;
+        private readonly IMapper _mapper;
 
-        public PickupsController( IPickupService pickupService)
+        public PickupsController( IPickupService pickupService, IMapper mapper)
         {
             _pickupService = pickupService;
+            _mapper = mapper;
         }
 
         // For Admin
@@ -59,9 +63,10 @@ namespace MyWashApi.Controllers
 
         // POST: api/Pickups
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromBody] Pickup pickup)
+        public async Task<IActionResult> PostAsync([FromBody] PickupWriteDto pickupWriteDto)
         {
-            var newPickup = await _pickupService.CreatePickup(pickup);
+            var pickup = _mapper.Map<Pickup>(pickupWriteDto);
+            var newPickup = await _pickupService.CreatePickup(pickup, new Guid(pickupWriteDto.UserId));
 
             return Ok(new { PickupId = newPickup.Id });
         }

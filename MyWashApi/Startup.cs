@@ -30,9 +30,14 @@ namespace MyWashApi
             //services.AddDbContext<MyWashContext>(options => options.UseSqlServer(Configuration["Database:ConnectionString"]));
             //services.AddDbContext<MyWashContext>(options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
 
+            // DI of services and repos.
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
-            services.AddTransient<IUserRepository, UserRepository>();
+
+            services.AddTransient<IUserRepository, UserRepository>();            
             services.AddTransient<IUserService, UserService>();
+
+            services.AddTransient<IPickupService, PickupService>();
+            services.AddTransient<IPickupRepository, PickupRepository>();
 
             services.AddControllersWithViews();
 
