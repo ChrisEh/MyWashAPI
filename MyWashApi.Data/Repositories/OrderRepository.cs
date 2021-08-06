@@ -40,9 +40,15 @@ namespace MyWashApi.Data.Repositories
 
         public async Task<Pickup> CreatePickup(Pickup newPickup, Guid userId)
         {
+            if (await _ctx.Pickups.AnyAsync(p => p.PickupStatus == PickupStatus.Requested && p.User.Id == userId))
+            {
+                return null;
+            }
+
             newPickup.User = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
             _ctx.Pickups.Add(newPickup);
             await _ctx.SaveChangesAsync();
+
             return newPickup;
         }
 

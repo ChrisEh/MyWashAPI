@@ -68,7 +68,10 @@ namespace MyWashApi.Controllers
             var pickup = _mapper.Map<Pickup>(pickupWriteDto);
             var newPickup = await _pickupService.CreatePickup(pickup, new Guid(pickupWriteDto.UserId));
 
-            return Ok(new { PickupId = newPickup.Id });
+            if (newPickup != null)
+                return Ok(new { PickupId = newPickup.Id });
+            else
+                return BadRequest();
         }
 
         // PUT: api/Pickups/CompletePickup/5
